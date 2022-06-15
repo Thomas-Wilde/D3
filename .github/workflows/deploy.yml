@@ -27,10 +27,12 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: List folder
-        run: ls
+        run: |
+          ls ./
+          ls ./pages
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./pages
+          publish_dir: ./
