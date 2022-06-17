@@ -1,5 +1,10 @@
 <!doctype html>
-<html>
+<meta charset="utf-8">
+<!-- Load d3.js -->
+<script src="https://d3js.org/d3.v4.js"></script>
+
+<!-- Create a div where the graph will take place -->
+<div id="my_dataviz"></div>
 
 <head>
   <style>
@@ -59,32 +64,43 @@
 
       g.append("g")
         .call(d3.axisLeft(y).tickFormat(function (d) {
-          return "$" + d;
+          return d + " min";
         }).ticks(10))
         .append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("y", 6)
-        .attr("dy", "-5.1em")
+        // .attr("transform", "rotate(-90)")
+        .attr("y", "-2.0em")
         .attr("text-anchor", "end")
         .attr("stroke", "black")
-        .text("Stock Price");
+        .text("Uhrzeit");
 
-      g.selectAll(".bar")
+      // Add dots
+      g.selectAll("dot")
         .data(data)
-        .enter().append("rect")
-        .attr("class", "bar")
+        .enter().append("circle")
         .on("mouseover", onMouseOver) //Add listener for the mouseover event
         .on("mouseout", onMouseOut)   //Add listener for the mouseout event
-        .attr("x", function (d) { return x(d.day); })
-        .attr("y", function (d) { return y(d.duration); })
-        .attr("width", x.bandwidth())
-        .transition()
-        .ease(d3.easeLinear)
-        .duration(400)
-        .delay(function (d, i) {
-          return i * 50;
-        })
-        .attr("height", function (d) { return height - y(d.duration); });
+        .attr("cx", function (d) { return x(d.day); })
+        .attr("cy", function (d) { return y(d.duration); })
+        .attr("r", function (d) { return ((d.duration) / 5) > 5 ? (d.duration) / 5 : 5; })
+        .style("fill", "#69b3a2")
+
+
+      // g.selectAll(".bar")
+      //   .data(data)
+      //   .enter().append("rect")
+      //   .attr("class", "bar")
+      //   .on("mouseover", onMouseOver) //Add listener for the mouseover event
+      //   .on("mouseout", onMouseOut)   //Add listener for the mouseout event
+      //   .attr("x", function (d) { return x(d.day); })
+      //   .attr("y", function (d) { return y(d.duration); })
+      //   .attr("width", x.bandwidth())
+      //   .transition()
+      //   .ease(d3.easeLinear)
+      //   .duration(400)
+      //   .delay(function (d, i) {
+      //     return i * 50;
+      //   })
+      //   .attr("height", function (d) { return height - y(d.duration); });
     });
 
     //mouseover event handler function

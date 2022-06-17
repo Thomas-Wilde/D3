@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <style>
   .links line {
-    stroke: #999;
+    stroke: rgb(116, 17, 17);
     stroke-opacity: 0.6;
   }
 
@@ -71,7 +71,7 @@
   });
 
   function dragstarted(d) {
-    if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+    if (!d3.event.active) simulation.alphaTarget(1.1).restart();
     d.fx = d.x;
     d.fy = d.y;
   }
