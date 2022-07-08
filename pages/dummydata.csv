@@ -1,8 +1,10 @@
-day,duration
-Montag,23
-Dienstag,57
-Mittwoch,56
-Donnerstag,59
-Freitag,26
-Samstag,58
-Sontag,23
+day,H,M,duration,task
+Montag,1,12,70,Brawl Stars
+Montag,10,51,23,YouTube
+Dienstag,14,20,57,Internet
+Dienstag,14,38,23,Netflix
+Mittwoch,17,59,56,Naruto
+Donnerstag,14,16,59,Sport
+Freitag,18,32,26,Schlafen
+Samstag,3,48,58,Duschen
+Sontag,14,30,23,Netflix
