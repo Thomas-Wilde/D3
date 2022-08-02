@@ -1,0 +1,13 @@
+day,H,M,duration,task
+Montag,7,10,90,verb
+Montag,10,05,10,spread
+Montag,11,20,30,spread
+Montag,12,00,10,spread
+Dienstag,0,10,90,verb
+Dienstag,10,05,10,spread
+Dienstag,11,20,30,spread
+Dienstag,12,00,10,spread
+Freitag,3,40,780,verb
+Sonntag,15,10,65,verb
+
+

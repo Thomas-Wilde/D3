@@ -35,26 +35,28 @@
       .attr("text-anchor", "middle")
       .text("Dummy Data")
 
-    var x = d3.scaleBand().range([0, width]).paddingInner(0.1)
-      .paddingOuter(0.05).align(0.5);
+    var x = d3.scaleBand().range([0, width]).paddingInner(0.1).paddingOuter(0.05).align(0.5);
     var y = d3.scaleLinear().range([height, 0]);
+
+    var time_label = [
+      "0:00", "1:00", "2:00", "3:00", "4:00", "5:00", "6:00", "7:00", "8:00",
+      "9:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00",
+      "17:00", "18:00", "19:00", "20:00", "21:00", "22:00", "23:00", ""]
+
+    var days = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"]
 
     // create group for plot
     var plot = svg.append("g")
       .attr("transform", "translate(" + 100 + "," + 100 + ")");
 
-    d3.csv("dummydata2.csv", function (error, data) {
+    d3.csv("dummydata3.csv", function (error, data) {
       if (error) {
         throw error;
       }
-      var days = function (data) { return data.day; };
-      var hours = function (data) { return data.H; };
 
-      var time_label = ["0:00", "1:00", "2:00", "3:00", "4:00", "5:00", "6:00",
-        "7:00", "8:00", "9:00", "10:00", "11:00", "12:00", "13:00", "14:00",
-        "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00", "23:00"]
-      x.domain(data.map(days));
-      y.domain([0, 23]);
+      // var days = function (data) { return data.day; };
+      x.domain(days);
+      y.domain([0, 24]);
 
       // 'Tag' Label an der x-Achse
       plot.append("g")
@@ -94,16 +96,8 @@
       //   .delay(function (d, i) {
       //     return Math.random() * 700;
       //   })
-
       drawDaySeparationLines();
-      drawTasks("Montag", -1, -1, -1);
-      drawTasks("Dienstag", -1, -1, -1);
-      drawTasks("Mittwoch", -1, -1, -1);
-      drawTasks("Donnerstag", -1, -1, -1);
-      drawTasks("Freitag", -1, -1, -1);
-      drawTasks("Samstag", -1, -1, -1);
-      drawTasks("Sonntag", -1, -1, -1);
-
+      drawTasks(data);
 
       // plot.selectAll(".bar")
       //   .data(data)
@@ -116,11 +110,12 @@
       //   .attr("width", x.bandwidth())
       //   .transition()
       //   .ease(d3.easeLinear)
-      //   .duration(100)
+      //   .duration(200)
       //   .delay(function (d, i) {
-      //     return i * 10;
+      //     return i * 100;
       //   })
-      //   .attr("height", function (d) { return height - y(d.duration); });
+      //   .attr("height", function (d) { return height - y(d.duration); })
+      //   ;
     });
 
     // --------------------------------------------------------------- //
@@ -129,8 +124,8 @@
       bandwidth = x.bandwidth();
       step = x.step();
       gap = (step - bandwidth);
-      for (let i = 0; i < x.domain().length; i++) {
-        console.log(x(x.domain()[i]));
+      for (let i = 1; i < x.domain().length; i++) {
+        // console.log(x(x.domain()[i]));
         x_line = x(x.domain()[i]) - gap / 2.0;
         plot.append("line")
           .attr("x1", x_line)
@@ -148,40 +143,72 @@
         .attr("x2", x_line)
         .attr("y2", height)
         .style("stroke-width", 1.5)
-        .style("stroke", "grey")
-        .style("stroke-dasharray", ("3, 3"));
+        .style("stroke", "grey");
     }
 
     // --------------------------------------------------------------- //
-    function drawTasks(day, start_H, start_M, duration) {
-      quad_data = taskToQuadArray(day, start_H, start_M, duration);
-      var rects = svg.selectAll("foo")
-        .data(quad_data)
-        .enter()
-        .append("rect")
-        .attr("x", d => d.x0)
-        .attr("y", d => d.y0)
-        .attr("width", d => d.x1 - d.x0)
-        .attr("height", d => d.y1 - d.y0)
-        .attr("fill", "teal")
-        .attr('stroke', 'rgba(0,0,0,255)');
+    function drawTasks(data) {
+      for (var i = 0; i < data.length; i++) {
+        var day = data[i].day;
+        var H = data[i].H;
+        var M = data[i].M;
+        var L = data[i].duration;
+        quad_data = taskToQuadArray(day, H, M, L)
+
+        var rects = svg.selectAll(".bar")
+          .data(quad_data)
+          .enter()
+          .append("rect")
+          .on("mouseover", onMouseOver) //Add listener for the mouseover event
+          .on("mouseout", onMouseOut)   //Add listener for the mouseout event
+          .attr('class', 'bar')
+          .attr('stroke', 'rgba(0,0,0,255)')
+          .attr("x", d => d.x0)
+          .attr("y", d => d.y0)
+          .attr("fill", "teal")
+          .attr("height", d => d.y1 - d.y0)
+          .attr("width", 0)
+          .transition()
+          .ease(d3.easeLinear)
+          .duration(5)
+          .delay(function (d, i) {
+            return i * 10;
+          })
+          .attr("width", d => d.x1 - d.x0)
+          ;
+      }
     }
 
     // --------------------------------------------------------------- //
-    function taskToQuadArray(day, start_H, start_M, duration) {
+    // Hour, Minute, Length
+    function taskToQuadArray(day, H, M, L) {
       bandwidth = x.bandwidth();
       step = x.step();
-      gap = (step - bandwidth);
-
+      gap = (step - bandwidth) * 0.25;
       quad_width = x.bandwidth() / 6;
-      const day_idx = dayNameToIndex(day);
+      quad_height = height / 24;
+
+      L = Math.round(L / 10) * 10;
+      M = Math.round(M / 10) * 10;
+
       const quad_data = [];
-      for (let i = 0; i < 6; i++) {
-        x0_val = dayNameToX0(day) + i * quad_width - gap * 0.25;
-        x1_val = x0_val + quad_width;
+      while (L > 0) {
+        // ---
+        x0 = dayToX0(day) + (M / 10) * quad_width - gap;
+        x1 = x0 + quad_width;
+        y0 = height + (margin / 2) - (parseInt(H) + 1) * quad_height;
+        y1 = y0 + quad_height;
+        // ---
         quad_data.push(
-          { x0: x0_val, x1: x1_val, y0: 200, y1: 200 + quad_width }
+          { x0: x0, x1: x1, y0: y0, y1: y1 }
         );
+        // ---
+        L = L - 10;
+        M = M + 10;
+        if (M > 50) {
+          M = parseInt(M) - 60;
+          H = parseInt(H) + 1;
+        }
       }
       return quad_data;
     }
@@ -198,9 +225,8 @@
     }
 
     // --------------------------------------------------------------- //
-    function dayNameToX0(day) {
+    function dayToX0(day) {
       const day_idx = dayNameToIndex(day);
-      console.log(x(x.domain()[day_idx]));
       return x(x.domain()[day_idx]) + x.bandwidth();
     }
 
@@ -238,47 +264,47 @@
     function onMouseOver(d, i) {
       d3.select(this).attr('class', 'highlight');
       d3.select(this).raise();
-      d3.select(this)
-        .transition()     // adds animation
-        .duration(300)
-        .attr("cx", function (d) { return x(d.day) + 0.5 * x.bandwidth(); })
-        .attr("cy", function (d) { return timeToYCoordinate(d.H, d.M); })
-        .attr("r", 15);
-      // .attr("r", function (d) { return durationToRadius(d.duration) * 2.0; });
+      // d3.select(this)
+      //   .transition()     // adds animation
+      //   .duration(300)
+      //   .attr("cx", function (d) { return x(d.day) + 0.5 * x.bandwidth(); })
+      //   .attr("cy", function (d) { return timeToYCoordinate(d.H, d.M); })
+      //   .attr("r", 15);
+      // // .attr("r", function (d) { return durationToRadius(d.duration) * 2.0; });
 
-      // --- text for the task and the time
-      // --- split the text to achieve a "linebreak"
-      var text_x = x(d.day) + 0.5 * x.bandwidth();
-      var y0 = timeToYCoordinate(d.H, d.M) - 35;
-      var info0 = [d.task];
+      // // --- text for the task and the time
+      // // --- split the text to achieve a "linebreak"
       // var text_x = x(d.day) + 0.5 * x.bandwidth();
-      // var text_y = timeToYCoordinate(d.H, d.M);
-      // var info = [d.duration];
-      plot.append("text")
-        .attr('class', 'val')
-        .attr('x', text_x)
-        .attr('y', y0)
-        .text(info0)
-        .style("opacity", 0)
-        .style("text-anchor", "middle")
-        .transition()
-        .delay(200)
-        .duration(300)
-        .style("opacity", 1);
+      // var y0 = timeToYCoordinate(d.H, d.M) - 35;
+      // var info0 = [d.task];
+      // // var text_x = x(d.day) + 0.5 * x.bandwidth();
+      // // var text_y = timeToYCoordinate(d.H, d.M);
+      // // var info = [d.duration];
+      // plot.append("text")
+      //   .attr('class', 'val')
+      //   .attr('x', text_x)
+      //   .attr('y', y0)
+      //   .text(info0)
+      //   .style("opacity", 0)
+      //   .style("text-anchor", "middle")
+      //   .transition()
+      //   .delay(200)
+      //   .duration(300)
+      //   .style("opacity", 1);
 
-      var y1 = timeToYCoordinate(d.H, d.M) - 20;
-      var info1 = [d.duration + "min"];
-      plot.append("text")
-        .attr('class', 'val')
-        .attr('x', text_x)
-        .attr('y', y1)
-        .text(info1)
-        .style("opacity", 0)
-        .style("text-anchor", "middle")
-        .transition()
-        .delay(200)
-        .duration(300)
-        .style("opacity", 1);
+      // var y1 = timeToYCoordinate(d.H, d.M) - 20;
+      // var info1 = [d.duration + "min"];
+      // plot.append("text")
+      //   .attr('class', 'val')
+      //   .attr('x', text_x)
+      //   .attr('y', y1)
+      //   .text(info1)
+      //   .style("opacity", 0)
+      //   .style("text-anchor", "middle")
+      //   .transition()
+      //   .delay(200)
+      //   .duration(300)
+      //   .style("opacity", 1);
 
     }
 
@@ -287,15 +313,15 @@
     function onMouseOut(d, i) {
       // use the text label class to remove label on mouseout
       d3.select(this).attr('class', 'bar');
-      d3.select(this)
-        .transition()     // adds animation
-        .duration(300)
-        .attr("cx", function (d) { return x(d.day) + 0.5 * x.bandwidth(); })
-        .attr("cy", function (d) { return timeToYCoordinate(d.H, d.M); })
-        .attr("r", function (d) { return durationToRadius(d.duration); });
+      // d3.select(this)
+      //   .transition()     // adds animation
+      //   .duration(300)
+      //   .attr("cx", function (d) { return x(d.day) + 0.5 * x.bandwidth(); })
+      //   .attr("cy", function (d) { return timeToYCoordinate(d.H, d.M); })
+      //   .attr("r", function (d) { return durationToRadius(d.duration); });
 
-      d3.selectAll('.val')
-        .remove()
+      // d3.selectAll('.val')
+      //   .remove()
     }
 
   </script>
