@@ -12,6 +12,10 @@
       fill: steelblue;
     }
 
+    .quad {
+      fill: steelblue;
+    }
+
     .highlight {
       fill: orange;
     }
@@ -97,7 +101,7 @@
       //     return Math.random() * 700;
       //   })
       drawDaySeparationLines();
-      drawTasks(data);
+      drawTasks1(data);
 
       // plot.selectAll(".bar")
       //   .data(data)
@@ -147,6 +151,69 @@
     }
 
     // --------------------------------------------------------------- //
+    function drawTasks1(data) {
+      for (var i = 0; i < data.length; i++) {
+        var day = data[i].day;
+        var H = data[i].H;
+        var M = data[i].M;
+        var L = data[i].duration;
+        quad_data = taskToQuadArray(day, H, M, L)
+
+        var rects = svg.append("g");
+        var delay = Math.random() * 200 + 50;
+        for (var j = 0; j < quad_data.length; j++) {
+          x0 = quad_data[j].x0;
+          x1 = quad_data[j].x1
+          y0 = quad_data[j].y0;
+          y1 = quad_data[j].y1
+          rects.append("rect")
+            .attr('stroke', 'rgba(0,0,0,255)')
+            .attr("x", x0)
+            .attr("y", y0)
+            .attr("height", y1 - y0)
+            .attr("width", 0)
+            .attr("width", x1 - x0)
+            .style("opacity", 0)
+            .transition()
+            .ease(d3.easeLinear)
+            .duration(100)
+            .delay(delay)
+            .style("opacity", 1)
+            ;
+        }
+        rects.on("mouseover", onMouseOver) //Add listener for the mouseover event
+          .on("mouseout", onMouseOut)   //Add listener for the mouseout event
+          .attr('class', 'quad');
+
+        d3
+          .select("#my_dataviz")
+          .append(() => svg.node());
+
+        // rects = svg.selectAll(".quad")
+        //   .data(quad_data)
+        //   .enter()
+        //   .append("rect")
+        //   .on("mouseover", onMouseOver) //Add listener for the mouseover event
+        //   .on("mouseout", onMouseOut)   //Add listener for the mouseout event
+        //   .attr('class', 'quad')
+        //   .attr('stroke', 'rgba(0,0,0,255)')
+        //   .attr("x", d => d.x0)
+        //   .attr("y", d => d.y0)
+        //   .attr("fill", "teal")
+        //   .attr("height", d => d.y1 - d.y0)
+        //   .attr("width", 0)
+        //   .transition()
+        //   .ease(d3.easeLinear)
+        //   .duration(5)
+        //   .delay(function (d, i) {
+        //     return i * 10;
+        //   })
+        //   .attr("width", d => d.x1 - d.x0)
+        //   ;
+      }
+    }
+
+    // --------------------------------------------------------------- //
     function drawTasks(data) {
       for (var i = 0; i < data.length; i++) {
         var day = data[i].day;
@@ -155,13 +222,13 @@
         var L = data[i].duration;
         quad_data = taskToQuadArray(day, H, M, L)
 
-        var rects = svg.selectAll(".bar")
+        var rects = svg.selectAll(".quad")
           .data(quad_data)
           .enter()
           .append("rect")
           .on("mouseover", onMouseOver) //Add listener for the mouseover event
           .on("mouseout", onMouseOut)   //Add listener for the mouseout event
-          .attr('class', 'bar')
+          .attr('class', 'quad')
           .attr('stroke', 'rgba(0,0,0,255)')
           .attr("x", d => d.x0)
           .attr("y", d => d.y0)
